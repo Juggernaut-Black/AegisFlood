@@ -13,6 +13,9 @@ __pycache__/
 .env
 backend/.env
 
+# Local DB
+aegisflood.db
+
 # OS
 .DS_Store
 Thumbs.db

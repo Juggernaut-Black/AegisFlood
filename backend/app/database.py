@@ -5,10 +5,14 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg2://postgres:password@localhost:5432/aegisflood_mvp",
+    "sqlite:///./aegisflood.db",
 )
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
+_engine_kwargs = {"pool_pre_ping": True, "future": True}
+if DATABASE_URL.startswith("sqlite"):
+    _engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 Base = declarative_base()

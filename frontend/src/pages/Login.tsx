@@ -26,23 +26,25 @@ export default function Login() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md">
       <p className="text-center mb-4">
-        <Link to="/" className="text-blue-600 hover:underline">← Back to home</Link>
+        <Link to="/" className="text-slate-600 hover:text-slate-900">← Back to home</Link>
       </p>
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-3">Authority Login</h2>
-        <p className="text-sm text-gray-600 mb-4">Sign in for dashboard and alert management.</p>
+        <h2 className="text-xl font-semibold mb-2">Authority Login</h2>
+        <p className="text-sm text-slate-600 mb-6">Sign in for dashboard and alert management.</p>
         <form onSubmit={onSubmit} className="space-y-3">
           <Input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
           <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <Button type="submit" className="w-full">Login</Button>
         </form>
-        <p className="text-sm text-gray-500 mt-4 text-center">
+        <p className="text-sm text-slate-500 mt-6 text-center">
           Citizens: <Link to="/register" className="text-blue-600 hover:underline">Register here</Link>
         </p>
       </Card>
+      </div>
     </div>
   )
 }

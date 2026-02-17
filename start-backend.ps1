@@ -26,15 +26,6 @@ Write-Host "📥 Installing dependencies..." -ForegroundColor Yellow
 pip install -q --upgrade pip
 pip install -q -r backend/requirements.txt
 
-# Check if Postgres is running (Docker)
-Write-Host "🐘 Checking PostgreSQL..." -ForegroundColor Yellow
-$postgresRunning = docker ps --filter "name=aegisflood_postgres" --format "{{.Names}}" | Select-String "aegisflood_postgres"
-if (-not $postgresRunning) {
-    Write-Host "⚠️  PostgreSQL container not running. Starting with docker-compose..." -ForegroundColor Yellow
-    docker-compose up -d postgres
-    Start-Sleep -Seconds 5
-}
-
 # Set PYTHONPATH
 $env:PYTHONPATH = "."
 

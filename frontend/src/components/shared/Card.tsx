@@ -24,34 +24,34 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({
   
   const variants: Record<string, string> = {
     default: `
-      bg-gradient-to-br from-purple-900/40 to-indigo-900/40
-      border border-cyan-400/30
-      shadow-lg backdrop-blur-sm
+      bg-white
+      border border-slate-200
+      shadow-sm
     `,
     elevated: `
-      bg-gradient-to-br from-purple-800/50 to-indigo-800/50
-      border border-cyan-400/40
-      shadow-xl backdrop-blur-md
+      bg-white
+      border border-slate-200
+      shadow-md
     `,
     outlined: `
-      bg-purple-900/20
-      border-2 border-cyan-400/50
-      shadow-md backdrop-blur-sm
+      bg-white
+      border-2 border-slate-200
+      shadow-none
     `,
     glass: `
-      bg-purple-900/30 border border-cyan-400/30
+      bg-white/70 border border-slate-200/70
       backdrop-filter blur-12px
-      shadow-lg
+      shadow-sm
     `,
     gradient: `
-      bg-gradient-to-br from-purple-800/60 to-indigo-800/60
-      border border-cyan-400/40
-      shadow-xl backdrop-blur-md
+      bg-gradient-to-br from-slate-50 to-white
+      border border-slate-200
+      shadow-sm
     `,
     surface: `
-      bg-gradient-to-br from-purple-700/50 to-indigo-700/50
-      border border-cyan-400/50
-      shadow-2xl backdrop-blur-md
+      bg-slate-50
+      border border-slate-200
+      shadow-sm
     `
   }
 
@@ -64,13 +64,13 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({
   }
 
   const hoverEffect = hover ? `
-    hover:shadow-2xl hover:-translate-y-1 
-    hover:border-cyan-400/60 hover:from-purple-700/60 hover:to-indigo-700/60
+    hover:shadow-md hover:-translate-y-0.5
+    hover:border-slate-300
     cursor-pointer
   ` : ''
 
   const interactiveEffect = interactive ? `
-    hover:from-purple-800/60 hover:to-indigo-800/60
+    hover:border-slate-300
     active:scale-[0.99]
     cursor-pointer
   ` : ''

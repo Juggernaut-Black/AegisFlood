@@ -24,56 +24,58 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   fullWidth = false
 }, ref) => {
   const base = `
-    inline-flex items-center justify-center font-medium 
+    inline-flex items-center justify-center font-medium
     transition-all duration-200 cubic-bezier(0.4, 0, 0.2, 1)
-    focus-ring disabled:opacity-40 disabled:cursor-not-allowed 
+    disabled:opacity-40 disabled:cursor-not-allowed
     relative overflow-hidden select-none
-    hover-lift
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
   `
   
   const variants: Record<string, string> = {
     primary: `
-      bg-gradient-to-r from-purple-800 to-indigo-800 text-white 
-      border border-cyan-400/30
-      hover:from-purple-700 hover:to-indigo-700 hover:border-cyan-400/50
-      active:from-purple-900 active:to-indigo-900 active:scale-[0.98]
-      shadow-lg hover:shadow-xl backdrop-blur-sm
+      bg-blue-600 text-white
+      border border-blue-600
+      hover:bg-blue-700 hover:border-blue-700
+      active:scale-[0.99]
+      shadow-sm
     `,
     secondary: `
-      bg-purple-900/50 text-purple-100 
-      border border-purple-600/30
-      hover:bg-purple-800/60 hover:text-white hover:border-purple-500/40
-      active:bg-purple-700/70 active:scale-[0.98]
-      shadow-md backdrop-blur-sm
+      bg-slate-900 text-white
+      border border-slate-900
+      hover:bg-slate-800 hover:border-slate-800
+      active:scale-[0.99]
+      shadow-sm
     `,
     outline: `
-      bg-transparent text-white 
-      border border-cyan-400/50
-      hover:bg-purple-800/30 hover:border-cyan-400
-      active:bg-purple-700/40 active:scale-[0.98]
-      backdrop-blur-sm
+      bg-white text-slate-900
+      border border-slate-200
+      hover:bg-slate-50 hover:border-slate-300
+      active:scale-[0.99]
     `,
     ghost: `
-      bg-transparent text-purple-200 
-      hover:bg-purple-800/30 hover:text-white
-      active:bg-purple-700/40 active:scale-[0.98]
+      bg-transparent text-slate-700
+      hover:bg-slate-100 hover:text-slate-900
+      active:scale-[0.99]
     `,
     gradient: `
-      bg-gradient-to-r from-cyan-500 to-purple-600 text-white border-0
-      hover:from-cyan-600 hover:to-purple-700 hover:shadow-lg
-      active:scale-[0.98]
-      shadow-md
+      bg-blue-600 text-white
+      border border-blue-600
+      hover:bg-blue-700 hover:border-blue-700
+      active:scale-[0.99]
+      shadow-sm
     `,
     danger: `
-      bg-gradient-to-r from-red-500 to-pink-600 text-white border-0
-      hover:from-red-600 hover:to-pink-700 hover:shadow-md
-      active:scale-[0.98]
+      bg-red-600 text-white
+      border border-red-600
+      hover:bg-red-700 hover:border-red-700
+      active:scale-[0.99]
       shadow-sm
     `,
     success: `
-      bg-gradient-to-r from-emerald-500 to-cyan-600 text-white border-0
-      hover:from-emerald-600 hover:to-cyan-700 hover:shadow-md
-      active:scale-[0.98]
+      bg-emerald-600 text-white
+      border border-emerald-600
+      hover:bg-emerald-700 hover:border-emerald-700
+      active:scale-[0.99]
       shadow-sm
     `
   }

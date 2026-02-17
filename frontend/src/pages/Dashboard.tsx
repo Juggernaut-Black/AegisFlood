@@ -146,31 +146,31 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Navigation Header */}
-      <header className="bg-purple-900/30 border-b border-cyan-400/30 backdrop-blur-md">
+      <header className="bg-white/80 border-b border-slate-200 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">FG</span>
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">AF</span>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">AegisFlood Dashboard</span>
+              <span className="text-xl font-semibold">AegisFlood</span>
             </div>
             
             {/* Navigation */}
             <nav className="flex items-center space-x-6">
-              <Button variant="ghost" className="glow-button" onClick={() => navigate('/dashboard')}>
+              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
                 🏠 Home
               </Button>
-              <Button variant="ghost" className="hover:bg-purple-800/50" onClick={() => navigate('/community')}>
+              <Button variant="ghost" onClick={() => navigate('/community')}>
                 💬 Community Chat
               </Button>
-              <Button variant="ghost" className="glow-button">
+              <Button variant="ghost">
                 🚨 Recent Alerts
               </Button>
-              <Button variant="ghost" className="glow-button">
+              <Button variant="ghost">
                 📊 Risk Predicted
               </Button>
             </nav>
@@ -181,7 +181,6 @@ export default function Dashboard() {
               <div className="relative">
                 <Button 
                   variant="ghost" 
-                  className="glow-button"
                   onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                 >
                   🌐 {selectedLanguage}
@@ -192,7 +191,7 @@ export default function Dashboard() {
                       {languages.map((lang) => (
                         <button
                           key={lang}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition-colors"
+                          className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition-colors"
                           onClick={() => {
                             setSelectedLanguage(lang)
                             setShowLanguageDropdown(false)
@@ -207,7 +206,7 @@ export default function Dashboard() {
               </div>
               
               {/* Theme Toggle */}
-              <Button variant="ghost" className="glow-button" onClick={toggleTheme}>
+              <Button variant="ghost" onClick={toggleTheme}>
                 {isDarkMode ? '☀️' : '🌙'}
               </Button>
               
@@ -215,7 +214,6 @@ export default function Dashboard() {
               <div className="relative">
                 <Button 
                   variant="ghost" 
-                  className="glow-button"
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 >
                   👤 A
@@ -233,10 +231,10 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="border-t pt-3" style={{ borderColor: 'var(--border-primary)' }}>
-                        <Link to="/profile" className="block w-full text-left px-2 py-1 text-sm hover:bg-blue-50 rounded transition-colors text-white">Profile Settings</Link>
+                        <Link to="/profile" className="block w-full text-left px-2 py-1 text-sm hover:bg-slate-50 rounded transition-colors">Profile Settings</Link>
                         <button
                           type="button"
-                          className="block w-full text-left px-2 py-1 text-sm hover:bg-blue-50 rounded transition-colors text-white"
+                          className="block w-full text-left px-2 py-1 text-sm hover:bg-slate-50 rounded transition-colors"
                           onClick={() => { logout(); navigate('/', { replace: true }) }}
                         >
                           Logout
@@ -259,7 +257,7 @@ export default function Dashboard() {
             {/* Alert Feature */}
             <Card variant="elevated" className="h-fit">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold glow-text">Recent Alerts</h2>
+                <h2 className="text-xl font-semibold">Recent Alerts</h2>
                 <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Updates every 3 hours</span>
               </div>
               
@@ -273,7 +271,7 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <div className="text-2xl font-bold mb-2">{location.percentage}%</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-slate-200 rounded-full h-2">
                       <div className={`${location.color} h-2 rounded-full`} style={{ width: `${location.percentage}%` }}></div>
                     </div>
                   </div>
@@ -299,7 +297,7 @@ export default function Dashboard() {
             {/* Interactive Risk Map */}
             <Card variant="elevated" className="flex-1">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold glow-text">Interactive Risk Map</h2>
+                <h2 className="text-xl font-semibold">Interactive Risk Map</h2>
                 <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Last Updated: 12:58:59 AM</span>
               </div>
               

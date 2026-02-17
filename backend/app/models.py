@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Boolean, JSON, Text
+from sqlalchemy import Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from geoalchemy2 import Geography
 
 from .database import Base
 
@@ -12,8 +12,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     phone_number = Column(String(15), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=True)
-    # Geography Point (lon, lat)
-    location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)
+    location_lat = Column(Float, nullable=True)
+    location_lon = Column(Float, nullable=True)
     language = Column(String(10), nullable=False, default='en')
     role = Column(String(20), nullable=False, default='citizen')  # citizen, authority
     sms_alerts = Column(Boolean, nullable=False, default=True)
@@ -28,7 +28,7 @@ class Region(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     state = Column(String(100), nullable=True)
-    geometry = Column(Geography(geometry_type='POLYGON', srid=4326), nullable=True)
+    geometry = Column(Text, nullable=True)
     population = Column(Integer, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 

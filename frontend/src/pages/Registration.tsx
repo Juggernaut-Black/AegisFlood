@@ -2,7 +2,6 @@ import { useState } from 'react'
 import Card from '../components/shared/Card'
 import Input from '../components/shared/Input'
 import Button from '../components/shared/Button'
-import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { useI18n } from '../context/I18nContext'
@@ -32,7 +31,6 @@ export default function Registration() {
     }
   })
   const [otp, setOtp] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -47,47 +45,24 @@ export default function Registration() {
     setRegistrationData(prev => ({ ...prev, [field]: value }))
   }
 
-  const sendOTP = async () => {
-    setLoading(true)
-    setMessage('')
-    try {
-      await api.post('/auth/register', {
-        phone_number: registrationData.phone.replace(/\s/g, ''),
-        name: registrationData.location || undefined,
-        location: registrationData.location || undefined,
-        language: registrationData.language,
-        sms_alerts: registrationData.alerts.sms,
-        whatsapp_alerts: registrationData.alerts.whatsapp
-      })
-      setOtpSent(true)
-      setMessage('OTP sent. Use 0000 for demo.')
-    } catch (error: unknown) {
-      const msg = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
-        : null
-      setMessage(typeof msg === 'string' ? msg : 'Error sending OTP. Please try again.')
-    }
-    setLoading(false)
-  }
-
   const verifyOTP = async () => {
     setLoading(true)
     setMessage('')
     try {
-      const res = await api.post('/auth/verify', {
-        phone_number: registrationData.phone.replace(/\s/g, ''),
-        otp: otp.trim()
-      })
+      if (otp.trim() !== '0000') {
+        setMessage('Invalid OTP. Please try again.')
+        setLoading(false)
+        return
+      }
+      localStorage.setItem('DEMO_MODE', 'true')
+      const token = 'demo-token'
+      const role: 'citizen' = 'citizen'
+      localStorage.setItem('pendingAuth', JSON.stringify({ token, role }))
       setMessage('Phone verified successfully.')
       setOtp('')
       setCurrentStep(3)
-      // Store token for completion step; on "Complete Setup" we'll call login with stored token
-      localStorage.setItem('pendingAuth', JSON.stringify({ token: res.data.access_token, role: res.data.role }))
     } catch (error: unknown) {
-      const msg = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
-        : null
-      setMessage(typeof msg === 'string' ? msg : 'Invalid OTP. Please try again.')
+      setMessage('Invalid OTP. Please try again.')
     }
     setLoading(false)
   }
@@ -109,12 +84,12 @@ export default function Registration() {
             <div className="text-center">
               <div className="text-2xl mb-2">📍</div>
               <h2 className="text-lg font-semibold">Choose Location</h2>
-              <p className="text-sm text-gray-600 mt-2">Select your area to get accurate flood risk information and alerts.</p>
+              <p className="text-sm text-slate-600 mt-2">Select your area to get accurate flood risk information and alerts.</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location (City, District, State)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Location (City, District, State)</label>
               <Input placeholder="e.g., Guwahati, Kamrup, Assam" value={registrationData.location} onChange={e => updateData('location', e.target.value)} />
-              <p className="text-xs text-gray-500 mt-2">Enter your complete address including city, district, and state.</p>
+              <p className="text-xs text-slate-500 mt-2">Enter your complete address including city, district, and state.</p>
             </div>
             <Button onClick={nextStep} disabled={!registrationData.location.trim()} className="w-full">Next →</Button>
           </div>
@@ -126,32 +101,24 @@ export default function Registration() {
             <div className="text-center">
               <div className="text-2xl mb-2">📱</div>
               <h2 className="text-lg font-semibold">Phone Verification</h2>
-              <p className="text-sm text-gray-600 mt-2">We'll send a verification code to confirm your phone number.</p>
+              <p className="text-sm text-slate-600 mt-2">Use the test OTP to continue: <span className="font-medium text-slate-900">0000</span></p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
               <Input
                 placeholder="+91 98765 43210"
                 value={registrationData.phone}
                 onChange={e => updateData('phone', e.target.value)}
-                className={otpSent ? "opacity-60 pointer-events-none" : ""}
               />
             </div>
-            {!otpSent ? (
-              <div className="space-y-3">
-                <Button onClick={sendOTP} disabled={!registrationData.phone.trim() || loading} className="w-full">{loading ? 'Sending...' : 'Send OTP'}</Button>
-                <Button onClick={prevStep} variant="secondary" className="w-full">← Back</Button>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Enter OTP</label>
+                <Input placeholder="0000" value={otp} onChange={e => setOtp(e.target.value)} />
               </div>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
-                  <Input placeholder="0000" value={otp} onChange={e => setOtp(e.target.value)} />
-                </div>
-                <Button onClick={verifyOTP} disabled={!otp.trim() || loading} className="w-full">{loading ? 'Verifying...' : 'Verify OTP'}</Button>
-                <Button onClick={() => setOtpSent(false)} variant="secondary" className="w-full">Resend OTP</Button>
-              </div>
-            )}
+              <Button onClick={verifyOTP} disabled={!registrationData.phone.trim() || !otp.trim() || loading} className="w-full">{loading ? 'Verifying...' : 'Verify OTP'}</Button>
+              <Button onClick={prevStep} variant="secondary" className="w-full">← Back</Button>
+            </div>
           </div>
         )
 
@@ -161,10 +128,10 @@ export default function Registration() {
             <div className="text-center">
               <div className="text-2xl mb-2">🌐</div>
               <h2 className="text-lg font-semibold">Choose Language</h2>
-              <p className="text-sm text-gray-600 mt-2">Select your preferred language for alerts and interface.</p>
+              <p className="text-sm text-slate-600 mt-2">Select your preferred language for alerts and interface.</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Language</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Preferred Language</label>
               <select 
                 value={registrationData.language}
                 onChange={e => {
@@ -172,7 +139,7 @@ export default function Registration() {
                   updateData('language', lang)
                   setLanguage(lang)
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="en">English</option>
                 <option value="hi">Hindi</option>
@@ -193,18 +160,18 @@ export default function Registration() {
             <div className="text-center">
               <div className="text-2xl mb-2">🔔</div>
               <h2 className="text-lg font-semibold">{t('reg.alertPrefs')}</h2>
-              <p className="text-sm text-gray-600 mt-2">{t('reg.alertPrefsDesc')}</p>
+              <p className="text-sm text-slate-600 mt-2">{t('reg.alertPrefsDesc')}</p>
             </div>
             <div className="space-y-3">
               <label className="flex items-center space-x-3">
-                <input type="checkbox" checked={registrationData.alerts.sms} onChange={e => updateData('alerts', { ...registrationData.alerts, sms: e.target.checked })} className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                <input type="checkbox" checked={registrationData.alerts.sms} onChange={e => updateData('alerts', { ...registrationData.alerts, sms: e.target.checked })} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
                 <span className="text-sm">{t('reg.smsAlerts')}</span>
               </label>
               <label className="flex items-center space-x-3">
-                <input type="checkbox" checked={registrationData.alerts.whatsapp} onChange={e => updateData('alerts', { ...registrationData.alerts, whatsapp: e.target.checked })} className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                <input type="checkbox" checked={registrationData.alerts.whatsapp} onChange={e => updateData('alerts', { ...registrationData.alerts, whatsapp: e.target.checked })} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
                 <span className="text-sm">{t('reg.whatsappAlerts')}</span>
               </label>
-              <p className="text-xs text-gray-500">{t('reg.selectOne')}</p>
+              <p className="text-xs text-slate-500">{t('reg.selectOne')}</p>
             </div>
             <div className="flex space-x-3">
               <Button onClick={prevStep} variant="secondary" className="flex-1">← Back</Button>
@@ -237,27 +204,27 @@ export default function Registration() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-md mx-auto px-4 mb-6">
+    <div className="min-h-screen bg-slate-50 py-10">
+      <div className="max-w-md mx-auto px-4 mb-8">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-blue-600 hover:text-blue-800">← Back</Link>
-          <h1 className="text-lg font-semibold">Registration</h1>
-          <Link to="/" className="text-blue-600 hover:text-blue-800">Home</Link>
+          <Link to="/" className="text-slate-600 hover:text-slate-900">← Back</Link>
+          <h1 className="text-lg font-semibold text-slate-900">Registration</h1>
+          <Link to="/" className="text-slate-600 hover:text-slate-900">Home</Link>
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 mb-6">
+      <div className="max-w-md mx-auto px-4 mb-8">
         <div className="text-center mb-4">
-          <p className="text-sm text-gray-600">Step {currentStep} of 4</p>
+          <p className="text-sm text-slate-600">Step {currentStep} of 4</p>
         </div>
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${step.id <= currentStep ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border ${step.id <= currentStep ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200'}`}>
                 {step.id < currentStep ? '✓' : step.icon}
               </div>
               {index < steps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-2 ${step.id < currentStep ? 'bg-blue-600' : 'bg-gray-200'}`} />
+                <div className={`flex-1 h-px mx-2 ${step.id < currentStep ? 'bg-blue-600' : 'bg-slate-200'}`} />
               )}
             </div>
           ))}
@@ -268,7 +235,7 @@ export default function Registration() {
         <Card className="p-6">
           {renderStepContent()}
           {message && (
-            <div className={`mt-4 p-3 rounded-md text-sm ${message.includes('Error') || message.includes('Invalid') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+            <div className={`mt-4 p-3 rounded-xl text-sm border ${message.includes('Error') || message.includes('Invalid') ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
               {message}
             </div>
           )}
