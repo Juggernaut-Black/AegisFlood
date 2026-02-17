@@ -20,11 +20,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem('auth')
     if (saved) {
-      const parsed = JSON.parse(saved) as AuthState
-      setToken(parsed.token)
-      setRole(parsed.role)
-      setAuthToken(parsed.token)
+      try {
+        const parsed = JSON.parse(saved) as AuthState
+        setToken(parsed.token)
+        setRole(parsed.role)
+        setAuthToken(parsed.token)
+      } catch {
+        setToken(null)
+        setRole(null)
+        setAuthToken(null)
+      }
     }
+    const onLogout = () => {
+      setToken(null)
+      setRole(null)
+      setAuthToken(null)
+    }
+    window.addEventListener('aegisflood:logout', onLogout)
+    return () => window.removeEventListener('aegisflood:logout', onLogout)
   }, [])
 
   const login = (t: string, r: 'citizen' | 'authority') => {

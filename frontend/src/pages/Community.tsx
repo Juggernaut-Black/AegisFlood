@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Card from '../components/shared/Card'
 import Button from '../components/shared/Button'
+import { useAuth } from '../context/AuthContext'
 
 type CommunityPost = {
   id: number
@@ -32,8 +33,8 @@ export default function Community() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  // Mock user data
-  const user = { email: 'user@example.com' }
+  const { token, role } = useAuth()
+  const userLabel = token ? (role === 'authority' ? 'Authority' : 'Citizen') : 'Guest'
   const [posts, setPosts] = useState<CommunityPost[]>([
     {
       id: 1,
@@ -254,7 +255,7 @@ export default function Community() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-purple-200">
-              {user?.email || 'Anonymous'}
+              {userLabel}
             </div>
             <Button
               variant="outline"

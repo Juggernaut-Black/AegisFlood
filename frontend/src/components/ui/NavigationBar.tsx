@@ -16,7 +16,7 @@ export default function NavigationBar({ activePath }: Props) {
   const { t } = useI18n()
   
   const items = [
-    { to: '/', key: 'home' as const, label: t('app.home') },
+    { to: '/dashboard', key: 'home' as const, label: t('app.home') },
     { to: '/profile', key: 'profile' as const, label: t('app.profile') },
     { to: '/settings', key: 'settings' as const, label: t('app.settings') }
   ]

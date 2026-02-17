@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Card from '../components/shared/Card'
 import Button from '../components/shared/Button'
 import { useAuth } from '../context/AuthContext'
+import api from '../services/api'
 
 type RiskLocation = {
   name: string
   state: string
-  riskLevel: 'Low' | 'Medium' | 'High' | 'Safe'
+  riskLevel: string
   percentage: number
   color: string
 }
@@ -18,7 +19,31 @@ type AlertData = {
   message: string
   location: string
   timestamp: string
-  severity: 'low' | 'medium' | 'high'
+  severity: string
+}
+
+const FALLBACK_RISK: RiskLocation[] = [
+  { name: 'Chennai', state: 'Tamil Nadu', riskLevel: 'medium', percentage: 35, color: 'bg-orange-500' },
+  { name: 'Guwahati', state: 'Assam', riskLevel: 'high', percentage: 58, color: 'bg-red-500' },
+  { name: 'Patna', state: 'Bihar', riskLevel: 'medium', percentage: 62, color: 'bg-orange-500' },
+]
+
+const FALLBACK_ALERTS: AlertData[] = [
+  { id: 0, type: 'flood', message: 'Heavy rainfall expected in next 6 hours', location: 'Guwahati, Assam', timestamp: '—', severity: 'high' },
+  { id: -1, type: 'weather', message: 'Water level rising in Brahmaputra river', location: 'Assam', timestamp: '—', severity: 'medium' },
+]
+
+function formatTimeAgo(iso: string): string {
+  try {
+    const d = new Date(iso)
+    const n = Date.now() - d.getTime()
+    if (n < 60000) return 'Just now'
+    if (n < 3600000) return `${Math.floor(n / 60000)} min ago`
+    if (n < 86400000) return `${Math.floor(n / 3600000)} hours ago`
+    return d.toLocaleDateString()
+  } catch {
+    return '—'
+  }
 }
 
 export default function Dashboard() {
@@ -28,25 +53,74 @@ export default function Dashboard() {
   const [selectedLanguage, setSelectedLanguage] = useState('English')
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
-  
+  const [riskLocations, setRiskLocations] = useState<RiskLocation[]>(FALLBACK_RISK)
+  const [alerts, setAlerts] = useState<AlertData[]>(FALLBACK_ALERTS)
+  const [stats, setStats] = useState<{ total_users: number; total_regions: number; alerts_sent_24h: number } | null>(null)
+
+  useEffect(() => {
+    const abortController = new AbortController()
+    const signal = abortController.signal
+
+    // Fetch regions
+    api.get<{ id: number; name: string; state: string | null; latest_risk_level: string | null; latest_risk_score: number | null }[]>('/dashboard/regions', { signal })
+      .then((res) => {
+        if (signal.aborted) return
+        const list: RiskLocation[] = (res.data || []).slice(0, 6).map((r) => {
+          const level = (r.latest_risk_level || 'low').toLowerCase()
+          const score = r.latest_risk_score ?? 20
+          const color = level === 'high' ? 'bg-red-500' : level === 'medium' ? 'bg-orange-500' : 'bg-green-500'
+          return { name: r.name, state: r.state || '', riskLevel: level, percentage: score, color }
+        })
+        if (list.length) setRiskLocations(list)
+      })
+      .catch((err) => {
+        if (!signal.aborted && err.name !== 'CanceledError') {
+          console.error('Failed to load regions:', err)
+        }
+      })
+
+    // Fetch alerts
+    api.get<{ id: number; region: string; message: string; risk_level: string; created_at: string | Date }[]>('/alerts/', { signal })
+      .then((res) => {
+        if (signal.aborted) return
+        const list: AlertData[] = (res.data || []).slice(0, 10).map((a) => {
+          const createdAt = typeof a.created_at === 'string' ? a.created_at : a.created_at instanceof Date ? a.created_at.toISOString() : new Date().toISOString()
+          return {
+            id: a.id,
+            type: 'flood' as const,
+            message: a.message,
+            location: a.region,
+            timestamp: formatTimeAgo(createdAt),
+            severity: a.risk_level,
+          }
+        })
+        if (list.length) setAlerts(list)
+      })
+      .catch((err) => {
+        if (!signal.aborted && err.name !== 'CanceledError') {
+          console.error('Failed to load alerts:', err)
+        }
+      })
+
+    // Fetch stats
+    api.get<{ total_users: number; total_regions: number; alerts_sent_24h: number }>('/dashboard/stats', { signal })
+      .then((res) => {
+        if (!signal.aborted) setStats(res.data)
+      })
+      .catch((err) => {
+        if (!signal.aborted && err.name !== 'CanceledError') {
+          console.error('Failed to load stats:', err)
+        }
+      })
+
+    return () => {
+      abortController.abort()
+    }
+  }, [])
+
   const languages = [
-    'English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 
+    'English', 'Hindi', 'Bengali', 'Tamil', 'Telugu',
     'Marathi', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi'
-  ]
-  
-  const riskLocations: RiskLocation[] = [
-    { name: 'Chennai', state: 'Tamil Nadu', riskLevel: 'Medium', percentage: 35, color: 'bg-orange-500' },
-    { name: 'Kolkata', state: 'West Bengal', riskLevel: 'Low', percentage: 78, color: 'bg-yellow-500' },
-    { name: 'Guwahati', state: 'Assam', riskLevel: 'High', percentage: 58, color: 'bg-red-500' },
-    { name: 'Kochi', state: 'Kerala', riskLevel: 'Medium', percentage: 58, color: 'bg-orange-500' },
-    { name: 'Bhubaneswar', state: 'Odisha', riskLevel: 'Safe', percentage: 15, color: 'bg-green-500' },
-    { name: 'Patna', state: 'Bihar', riskLevel: 'Medium', percentage: 62, color: 'bg-orange-500' }
-  ]
-  
-  const alerts: AlertData[] = [
-    { id: 1, type: 'flood', message: 'Heavy rainfall expected in next 6 hours', location: 'Guwahati, Assam', timestamp: '2 min ago', severity: 'high' },
-    { id: 2, type: 'weather', message: 'Water level rising in Brahmaputra river', location: 'Kolkata, West Bengal', timestamp: '15 min ago', severity: 'medium' },
-    { id: 3, type: 'emergency', message: 'Evacuation alert for low-lying areas', location: 'Chennai, Tamil Nadu', timestamp: '1 hour ago', severity: 'high' }
   ]
 
   const toggleTheme = () => {
@@ -55,13 +129,11 @@ export default function Dashboard() {
   }
   
   const getRiskBadgeColor = (level: string) => {
-    switch (level) {
-      case 'Low': return 'bg-yellow-500 text-yellow-900'
-      case 'Medium': return 'bg-orange-500 text-orange-900'
-      case 'High': return 'bg-red-500 text-white'
-      case 'Safe': return 'bg-green-500 text-white'
-      default: return 'bg-gray-500 text-white'
-    }
+    const L = level.toLowerCase()
+    if (L === 'low' || L === 'safe') return 'bg-yellow-500 text-yellow-900'
+    if (L === 'medium') return 'bg-orange-500 text-orange-900'
+    if (L === 'high' || L === 'critical') return 'bg-red-500 text-white'
+    return 'bg-gray-500 text-white'
   }
   
   const getAlertIcon = (type: string) => {
@@ -193,10 +265,10 @@ export default function Dashboard() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {riskLocations.slice(0, 3).map((location, index) => (
-                  <div key={index} className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                  <div key={`${location.name}-${index}`} className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{location.name}, {location.state}</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskBadgeColor(location.riskLevel)}`}>
+                      <span className="font-medium">{location.name}{location.state ? `, ${location.state}` : ''}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getRiskBadgeColor(location.riskLevel)}`}>
                         {location.riskLevel}
                       </span>
                     </div>
@@ -294,10 +366,10 @@ export default function Dashboard() {
             <Card variant="elevated" className="flex-1">
               <h2 className="text-lg font-semibold mb-4 glow-text">🕐 Prediction Timeline (3hr intervals)</h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Prediction Time</span>
-                  <span className="font-medium">Now</span>
-                </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Prediction Time</span>
+                        <span className="font-medium">{stats ? `${stats.total_regions} regions · ${stats.total_users} users` : 'Now'}</span>
+                      </div>
                 
                 <div className="space-y-3">
                   {['12:00 PM', '3:00 PM', '6:00 PM', '9:00 PM', '12:00 AM'].map((time, index) => (

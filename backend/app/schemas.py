@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List, Dict
-from pydantic import BaseModel, Field, constr, conint
+from pydantic import BaseModel, Field, constr, conint, model_serializer
 
 
 PhoneNumberStr = constr(min_length=8, max_length=15)
@@ -31,6 +31,22 @@ class AdminLoginRequest(BaseModel):
     password: str
 
 
+class UserMeResponse(BaseModel):
+    phone_number: str
+    role: str
+    name: Optional[str] = None
+    language: str = "en"
+    sms_alerts: bool = True
+    whatsapp_alerts: bool = False
+
+
+class UserMeUpdate(BaseModel):
+    name: Optional[str] = None
+    language: Optional[str] = Field(default=None, pattern=r"^[a-z]{2}(-[A-Z]{2})?$")
+    sms_alerts: Optional[bool] = None
+    whatsapp_alerts: Optional[bool] = None
+
+
 class PredictionResponse(BaseModel):
     region_id: int
     risk_level: str
@@ -50,11 +66,23 @@ class AlertResponse(BaseModel):
     region: str
     message: str
     risk_level: str
-    created_by: Optional[str]
-    created_at: str
+    created_by: Optional[str] = None
+    created_at: datetime
 
     class Config:
         from_attributes = True
+    
+    @model_serializer
+    def serialize_model(self):
+        """Serialize datetime to ISO string for JSON."""
+        return {
+            'id': self.id,
+            'region': self.region,
+            'message': self.message,
+            'risk_level': self.risk_level,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if isinstance(self.created_at, datetime) else str(self.created_at),
+        }
 
 
 class AlertRequest(BaseModel):

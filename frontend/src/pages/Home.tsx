@@ -108,9 +108,11 @@ export default function Home() {
                 Contact management system
               </li>
             </ul>
-            <Button variant="secondary" className="w-full">
-              Authority Login
-            </Button>
+            <Link to="/login">
+              <Button variant="secondary" className="w-full">
+                Authority Login
+              </Button>
+            </Link>
           </Card>
         </div>
       </div>

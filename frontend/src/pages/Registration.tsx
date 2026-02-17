@@ -208,21 +208,24 @@ export default function Registration() {
             </div>
             <div className="flex space-x-3">
               <Button onClick={prevStep} variant="secondary" className="flex-1">← Back</Button>
-              <Button onClick={() => { 
+              <Button onClick={async () => {
                 const pending = localStorage.getItem('pendingAuth')
                 if (pending) {
                   try {
                     const { token, role } = JSON.parse(pending) as { token: string; role: 'citizen' | 'authority' }
-                    login(token, role)
-                    localStorage.removeItem('pendingAuth')
-                  } catch {
-                    login('demo-token', 'citizen')
+                    if (token && role) {
+                      login(token, role)
+                      localStorage.removeItem('pendingAuth')
+                      localStorage.setItem('userLocation', registrationData.location)
+                      navigate('/dashboard', { replace: true })
+                      return
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse pending auth:', e)
                   }
-                } else {
-                  login('demo-token', 'citizen')
                 }
-                localStorage.setItem('userLocation', registrationData.location)
-                navigate('/dashboard', { replace: true })
+                // Fallback: try to verify again if no pending auth
+                setMessage('Please complete phone verification first.')
               }} className="flex-1">Complete Setup</Button>
             </div>
           </div>
